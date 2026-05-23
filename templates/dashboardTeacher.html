@@ -1,0 +1,139 @@
+{% extends "layout.html" %}
+{% block title %}Teacher Dashboard{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-6 py-10">
+
+  <div class="flex items-start justify-between mb-8 gap-4 flex-wrap">
+    <div>
+      <p class="section-eyebrow mb-1">Teacher Dashboard</p>
+      <h1 class="text-3xl font-bold tracking-tight">{{ current_user.username }}</h1>
+      <p class="text-sm text-gray-500 mt-1">Create assignments, grade submissions, manage your simulations.</p>
+    </div>
+    <div class="flex gap-2 flex-wrap flex-shrink-0">
+      <a href="{{ url_for('new_assignment') }}" class="btn btn-primary">New Assignment</a>
+      <a href="{{ url_for('sandbox') }}" class="btn btn-secondary">Open Sandbox</a>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+    <div class="stat-badge">
+      <span class="val">{{ assignments|length }}</span>
+      <span class="lbl">Assignments</span>
+    </div>
+    <div class="stat-badge">
+      <span class="val">{{ total_subs }}</span>
+      <span class="lbl">Total Submissions</span>
+    </div>
+    <div class="stat-badge">
+      <span class="val" style="color:#f87171;">{{ pending_grades }}</span>
+      <span class="lbl">{{ 'Need' if pending_grades != 1 else 'Needs' }} Grading</span>
+    </div>
+    <div class="stat-badge">
+      <span class="val">{{ my_sims|length }}</span>
+      <span class="lbl">My Simulations</span>
+    </div>
+  </div>
+
+  <div class="grid md:grid-cols-3 gap-8">
+
+    <!-- Assignments list -->
+    <div class="md:col-span-2 space-y-4">
+      <div class="flex items-center justify-between mb-1">
+        <h2 class="font-semibold text-base">Your Assignments</h2>
+        <a href="{{ url_for('new_assignment') }}" class="btn btn-ghost btn-sm">+ New</a>
+      </div>
+
+      {% if assignments %}
+        {% for a in assignments %}
+        <div class="card p-5 relative">
+          {% set ungraded = a.submissions | selectattr('grade', 'none') | list | length %}
+          {% if ungraded > 0 %}
+            <div class="absolute top-3 right-4 flex items-center gap-1.5">
+              <span class="notif-dot"></span>
+              <span class="mono text-[10px] text-gray-500">{{ ungraded }} to grade</span>
+            </div>
+          {% endif %}
+
+          <div class="flex items-start gap-4">
+            <div class="flex-grow min-w-0">
+              <div class="flex items-center gap-2 mb-2 flex-wrap">
+                <h3 class="font-semibold text-sm truncate">{{ a.title }}</h3>
+                {% if a.is_published %}
+                  <span class="tag tag-green">Published</span>
+                {% else %}
+                  <span class="tag tag-gray">Draft</span>
+                {% endif %}
+                {% if a.difficulty %}
+                <span class="tag tag-gray diff-{{ a.difficulty }}">{{ a.difficulty }}</span>
+                {% endif %}
+              </div>
+              <p class="text-xs text-gray-500 line-clamp-2 leading-relaxed mb-3 font-medium">{{ a.description }}</p>
+
+              <div class="flex items-center gap-4 flex-wrap">
+                {% if a.concept %}
+                <a href="{{ url_for('conceptDetail', key=a.concept) }}" class="concept-pill">{{ a.concept | replace('_',' ') | title }}</a>
+                {% endif %}
+                {% if a.due_date %}
+                <span class="mono text-[10px] text-gray-400">due {{ a.due_date.strftime('%b %d, %Y') }}</span>
+                {% endif %}
+                <span class="mono text-[10px] text-gray-400">{{ a.submissions|length }} submission{{ 's' if a.submissions|length != 1 }}</span>
+              </div>
+
+              <!-- Submission progress bar -->
+              {% if a.submissions %}
+              <div class="mt-3 flex items-center gap-3">
+                <div class="progress-bar flex-grow">
+                  {% set graded_n = a.submissions | selectattr('grade') | list | length %}
+                  <div class="progress-fill" style="width:{{ (graded_n * 100 / a.submissions|length)|int }}%;background:#34d399;"></div>
+                </div>
+                <span class="mono text-[10px] text-gray-400">{{ graded_n }}/{{ a.submissions|length }} graded</span>
+              </div>
+              {% endif %}
+            </div>
+
+            <div class="flex flex-col gap-1.5 flex-shrink-0 items-end">
+              <a href="{{ url_for('assignmentDetail', aid=a.id) }}" class="btn btn-secondary btn-sm">View</a>
+              <a href="{{ url_for('edit_assignment', aid=a.id) }}" class="btn btn-ghost btn-sm">Edit</a>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="card p-12 text-center">
+          <p class="text-sm text-gray-500 font-medium mb-4">You haven't created any assignments yet.</p>
+          <a href="{{ url_for('new_assignment') }}" class="btn btn-primary">Create your first assignment</a>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Sidebar -->
+    <div class="space-y-5">
+      <div class="card p-5">
+        <h3 class="font-semibold text-sm mb-4">Quick Actions</h3>
+        <div class="space-y-2">
+          <a href="{{ url_for('new_assignment') }}" class="btn btn-primary w-full justify-center">New Assignment</a>
+          <a href="{{ url_for('sandbox') }}" class="btn btn-secondary w-full justify-center">Open Sandbox</a>
+          <a href="{{ url_for('demos') }}" class="btn btn-ghost w-full justify-center btn-sm">Browse Demos</a>
+          <a href="{{ url_for('gallery') }}" class="btn btn-ghost w-full justify-center btn-sm">Community Gallery</a>
+        </div>
+      </div>
+
+      {% if my_sims %}
+      <div class="card p-5">
+        <h3 class="font-semibold text-sm mb-3">My Saved Simulations</h3>
+        <div class="space-y-1">
+          {% for s in my_sims %}
+          <a href="{{ url_for('sandbox', id=s.id) }}" class="flex items-center gap-2 py-2 transition" style="border-bottom:1px solid var(--clr-border-light);">
+            <span class="tag tag-gray text-[9px]">{{ s.scenario }}</span>
+            <span class="text-xs flex-grow truncate">{{ s.title }}</span>
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,70 @@
+{% extends "layout.html" %}
+{% block title %}Admin{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-6 py-10">
+  <div class="mb-8">
+    <p class="section-eyebrow mb-1">Administration</p>
+    <h1 class="text-3xl font-bold tracking-tight">Admin Panel</h1>
+  </div>
+
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+    <div class="stat-badge"><span class="val">{{ users|length }}</span><span class="lbl">Total Users</span></div>
+    <div class="stat-badge"><span class="val">{{ ass_count }}</span><span class="lbl">Assignments</span></div>
+    <div class="stat-badge"><span class="val">{{ sub_count }}</span><span class="lbl">Submissions</span></div>
+    <div class="stat-badge"><span class="val" style="color:#f87171;">{{ pending }}</span><span class="lbl">Pending Grades</span></div>
+  </div>
+
+  <div class="grid md:grid-cols-2 gap-8">
+    <!-- Users -->
+    <div>
+      <h2 class="font-semibold text-sm mb-4">Users</h2>
+      <div class="card overflow-hidden">
+        <div style="border-color:var(--clr-border-light);">
+          {% for u in users %}
+          <div class="px-5 py-3 flex items-center justify-between gap-3" style="border-bottom:1px solid var(--clr-border-light);">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="font-medium text-sm">{{ u.username }}</span>
+                <span class="tag {% if u.is_admin %}tag-orange{% elif u.is_teacher %}tag-purple{% else %}tag-blue{% endif %}">{{ u.role }}</span>
+              </div>
+              <p class="text-xs text-gray-500 mono">{{ u.email }}</p>
+            </div>
+            <form method="POST" action="{{ url_for('promote_user', uid=u.id) }}" class="flex gap-1.5 items-center">
+              <select name="role" class="text-xs mono px-2 py-1"
+                      style="background:var(--clr-surface);border:1px solid var(--clr-border-light);color:var(--clr-text);">
+                {% for r in ['student','teacher','admin'] %}
+                <option value="{{ r }}" {% if u.role == r %}selected{% endif %}>{{ r }}</option>
+                {% endfor %}
+              </select>
+              <button type="submit" class="btn btn-secondary btn-sm">Set</button>
+            </form>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent simulations -->
+    <div>
+      <h2 class="font-semibold text-sm mb-4">Recent Simulations</h2>
+      <div class="card overflow-hidden">
+        <div>
+          {% for sim in sims %}
+          <div class="px-5 py-3 flex items-center justify-between gap-3" style="border-bottom:1px solid var(--clr-border-light);">
+            <div class="min-w-0">
+              <p class="text-sm font-medium truncate">{{ sim.title }}</p>
+              <p class="text-xs text-gray-500 mono">{{ sim.author.username }} · {{ sim.created_at.strftime('%b %d') }}</p>
+            </div>
+            <div class="flex gap-1.5 flex-shrink-0">
+              <span class="tag tag-gray">{{ sim.scenario }}</span>
+              <a href="{{ url_for('sandbox', id=sim.id) }}" class="btn btn-ghost btn-sm">Open</a>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

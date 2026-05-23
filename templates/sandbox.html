@@ -1,0 +1,152 @@
+{% extends "layout.html" %}
+{% block title %}Sandbox{% endblock %}
+
+{% block body_class %}sandbox-page{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/sandbox.css') }}">
+{% endblock %}
+
+{% block content %}
+<div id="sim-container">
+  <canvas id="sim-canvas"></canvas>
+
+  <!-- HUD: Stats -->
+  <div class="hud-panel" style="top:20px; left:20px;">
+    BODIES: <span id="hud-bodies">0</span> | 
+    TIME: <span id="hud-time">0.0</span>S | 
+    KE: <span id="hud-ke">0</span>
+    <div id="hud-scenario" style="margin-top:4px; font-weight:900;">CUSTOM SYSTEM</div>
+  </div>
+
+  <!-- Placement Hint -->
+  <div id="place-hint" style="position:absolute; bottom:20px; left:20px; pointer-events:none;">
+    <span class="hud-panel" style="font-size:10px; text-transform:uppercase;">
+      Click: Place | Drag: Velocity | Scroll: Zoom | Right-Drag: Pan
+    </span>
+  </div>
+</div>
+
+<aside id="sidebar">
+  <div class="sidebar-section">
+    <div class="sidebar-title">Simulation Control</div>
+    <div class="flex gap-2 mb-4">
+      <button id="btn-play" onclick="togglePlay()" class="btn btn-primary btn-sm flex-1 justify-center">▶ Play</button>
+      <button onclick="resetSim()" class="btn btn-secondary btn-sm flex-1 justify-center">↺ Reset</button>
+    </div>
+    <button onclick="clearBodies()" class="btn btn-secondary btn-sm w-full justify-center mb-2">✕ Clear All</button>
+    {% if current_user.is_authenticated %}
+    <button onclick="openSaveModal()" class="btn btn-primary btn-sm w-full justify-center">↑ Save Simulation</button>
+    {% else %}
+    <a href="{{ url_for('login') }}" class="btn btn-secondary btn-sm w-full justify-center">Sign in to Save</a>
+    {% endif %}
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-title">Global Parameters</div>
+    
+    <div class="ctrl-group">
+      <div class="ctrl-label"><span>Gravity (G)</span> <span id="gval">100</span></div>
+      <input type="range" id="ctrl-g" min="10" max="500" value="100" 
+             oninput="simParams.G=+this.value;document.getElementById('gval').textContent=this.value">
+    </div>
+
+    <div class="ctrl-group">
+      <div class="ctrl-label"><span>Time Speed</span> <span id="dtval">0.4</span></div>
+      <input type="range" id="ctrl-dt" min="0.05" max="2.5" step="0.05" value="0.4" 
+             oninput="simParams.dt=+this.value;document.getElementById('dtval').textContent=this.value">
+    </div>
+
+    <div class="ctrl-group">
+      <div class="ctrl-label"><span>Trail Length</span> <span id="trailval">120</span></div>
+      <input type="range" id="ctrl-trail" min="0" max="1000" value="120" 
+             oninput="simParams.trailLen=+this.value;document.getElementById('trailval').textContent=this.value">
+    </div>
+
+    <div class="flex gap-2">
+      <button id="btn-vectors" onclick="toggleVectors()" class="btn btn-secondary btn-sm flex-1 justify-center">Vectors</button>
+      <button id="btn-grid" onclick="toggleGrid()" class="btn btn-secondary btn-sm flex-1 justify-center">Grid</button>
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-title">Object Creation</div>
+    
+    <div class="ctrl-group">
+      <div class="ctrl-label"><span>Next Mass</span> <span id="mass-label">20</span></div>
+      <input type="range" id="ctrl-mass" min="1" max="5000" value="20" 
+             oninput="placingParams.mass=+this.value;document.getElementById('mass-label').textContent=this.value">
+    </div>
+
+    <div class="ctrl-group">
+      <div class="ctrl-label"><span>Next Size</span> <span id="size-label">Auto</span></div>
+      <input type="range" id="ctrl-size" min="0" max="100" value="0" 
+             oninput="placingParams.radius=+this.value;document.getElementById('size-label').textContent=this.value || 'Auto'">
+      <div style="font-size:9px; color:var(--clr-text-muted); margin-top:4px;">0 = AUTO-SCALE BY MASS</div>
+    </div>
+    
+    <div class="ctrl-group">
+      <div class="ctrl-label"><span>Color</span></div>
+      <div class="flex gap-2 flex-wrap">
+        {% for color in [null, '#666666', '#999999', '#cccccc'] %}
+        <button onclick="placingParams.color='{{ color or '' }}'" 
+                style="width:24px; height:24px; background:{{ color or 'var(--clr-text)' }}; border:1px solid var(--clr-border); cursor:pointer;"></button>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-title">Presets</div>
+    <div class="grid grid-cols-1 gap-1">
+      {% for key, label in [
+        ('solar_system','Solar System'),('binary_star','Binary Star'),
+        ('unequal_binary','Star+Planet'),('figure_eight','Fig-8'),
+        ('lagrange_trojan','Lagrange'),('hyperbolic_flyby','Slingshot'),
+        ('chaotic_three','Chaos'),('hohmann_transfer','Hohmann'),
+      ] %}
+      <button onclick="loadDemo('{{ key }}')" class="demo-btn">{{ label }}</button>
+      {% endfor %}
+    </div>
+  </div>
+</aside>
+
+<div id="save-modal">
+  <div class="card p-7 w-full max-w-sm mx-4">
+    <h2 class="font-semibold text-base mb-1">Save Simulation</h2>
+    <p class="text-xs text-gray-500 mb-5">Your current simulation will be saved to your account and can be shared publicly.</p>
+    <div class="space-y-4">
+      <div class="field">
+        <label>Title</label>
+        <input type="text" id="save-title" placeholder="e.g. Binary star with circumbinary planet">
+      </div>
+      <div class="field">
+        <label>Description</label>
+        <textarea id="save-desc" rows="2" style="resize:none;" placeholder="Briefly describe what makes this interesting…"></textarea>
+      </div>
+      <label class="flex items-center gap-2 cursor-pointer">
+        <input type="checkbox" id="save-public" checked style="accent-color:var(--clr-accent);">
+        <span class="text-sm">Make public in gallery</span>
+      </label>
+      <div class="flex gap-2 pt-1">
+        <button onclick="closeSaveModal()" class="btn btn-ghost flex-1 justify-center">Cancel</button>
+        <button onclick="saveSim()" class="btn btn-primary flex-1 justify-center">Save →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Jinja config injection (data only, no logic) -->
+<script>
+  window.SANDBOX_CONFIG = {
+    simId: {{ sim_id | tojson }},
+    demoKey: {{ demo_key | tojson }},
+    assignmentId: {{ assignment_id | tojson }},
+    isAuthenticated: {{ current_user.is_authenticated | tojson }}
+  };
+</script>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/sandboxSim.js') }}"></script>
+{% endblock %}

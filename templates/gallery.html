@@ -1,0 +1,81 @@
+{% extends "layout.html" %}
+{% block title %}Simulation Gallery{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-6 py-12">
+
+  <div class="mb-12 pb-8" style="border-bottom:1px solid var(--clr-border);">
+    <p class="section-eyebrow mb-2">Community</p>
+    <h1 class="text-5xl font-black uppercase tracking-tighter mb-4">Simulation Gallery</h1>
+    <p class="text-gray-500 max-w-xl text-sm font-medium">Public simulations saved by OrbitLab users. Open any to load it in the sandbox, or fork it to your own account.</p>
+  </div>
+
+  <!-- Search/filter bar -->
+  <form method="GET" class="flex flex-wrap gap-4 mb-12 items-end">
+    <div class="field flex-grow" style="min-width:200px;">
+      <label>Search</label>
+      <input type="text" name="q" value="{{ q }}" placeholder="Search by title…">
+    </div>
+    <div class="field" style="min-width:160px;">
+      <label>Scenario</label>
+      <select name="scenario">
+        <option value="">All types</option>
+        {% for v, l in [('2body','2-Body'),('3body','3-Body'),('nbody','N-Body'),('custom','Custom')] %}
+        <option value="{{ v }}" {% if scen == v %}selected{% endif %}>{{ l }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Filter</button>
+    {% if q or scen %}
+    <a href="{{ url_for('gallery') }}" class="btn btn-secondary">Clear</a>
+    {% endif %}
+  </form>
+
+  {% if simulations %}
+  <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-0" style="border-left:1px solid var(--clr-border); border-top:1px solid var(--clr-border);">
+    {% for sim in simulations %}
+    <div class="p-8 hover:bg-gray-50 transition flex flex-col gap-6" style="border-right:1px solid var(--clr-border); border-bottom:1px solid var(--clr-border);">
+      <div class="flex items-start justify-between gap-2">
+        <h3 class="font-bold text-sm uppercase tracking-tight">{{ sim.title }}</h3>
+        <span class="tag flex-shrink-0">{{ sim.scenario }}</span>
+      </div>
+      <p class="text-xs text-gray-500 flex-grow leading-relaxed line-clamp-3 font-medium">
+        {{ sim.description or 'A custom gravitational system.' }}
+      </p>
+      <div class="flex items-center justify-between pt-6" style="border-top:1px solid var(--clr-border-light);">
+        <div>
+          <span class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">by {{ sim.author.username }}</span>
+          {% if sim.fork_count > 0 %}
+          <span class="text-[10px] text-gray-400 font-bold uppercase tracking-widest ml-2">· {{ sim.fork_count }} fork{{ 's' if sim.fork_count != 1 }}</span>
+          {% endif %}
+          <p class="text-[9px] text-gray-400 font-bold uppercase mt-1">{{ sim.created_at.strftime('%b %d, %Y') }}</p>
+        </div>
+        <div class="flex gap-2">
+          <a href="{{ url_for('sandbox', id=sim.id) }}" class="btn btn-primary btn-sm">Open</a>
+          {% if current_user.is_authenticated %}
+          <button onclick="forkSim({{ sim.id }})" class="btn btn-secondary btn-sm" title="Fork this simulation">⑂</button>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="p-20 text-center" style="border:1px solid var(--clr-border);">
+    {% if q or scen %}
+    <p class="text-sm font-black uppercase mb-2">No results found</p>
+    <p class="text-xs text-gray-500 mb-6 font-medium">Try a different search term or scenario type.</p>
+    <a href="{{ url_for('gallery') }}" class="btn btn-secondary btn-sm">Clear filters</a>
+    {% else %}
+    <p class="text-sm font-black uppercase mb-2">Gallery is empty</p>
+    <p class="text-xs text-gray-500 mb-6 font-medium">Be the first to save a simulation from the sandbox!</p>
+    <a href="{{ url_for('sandbox') }}" class="btn btn-primary btn-sm">Open Sandbox</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/gallery.js') }}"></script>
+{% endblock %}

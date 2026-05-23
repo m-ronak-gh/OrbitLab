@@ -1,0 +1,72 @@
+/* ══════════════════════════════════════════════
+   OrbitLab — Base Styles
+   CSS custom properties, reset, body, utilities
+   ══════════════════════════════════════════════ */
+
+/* ── Light Theme (Default) ── */
+:root {
+  --clr-bg:           #ffffff;
+  --clr-surface:      #f9f9f9;
+  --clr-surface2:     #f2f2f2;
+  --clr-surface3:     #e5e5e5;
+  --clr-border:       #000000;
+  --clr-border-light: #e5e5e5;
+  --clr-text:         #000000;
+  --clr-text-muted:   #666666;
+  --clr-accent:       #000000;
+  --clr-nav-bg:       #ffffff;
+  --clr-inv:          #ffffff;
+  --clr-inv-bg:       #000000;
+
+  --font-main: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+/* ── Dark Theme ── */
+[data-theme="dark"] {
+  --clr-bg:           #000000;
+  --clr-surface:      #111111;
+  --clr-surface2:     #1a1a1a;
+  --clr-surface3:     #262626;
+  --clr-border:       #ffffff;
+  --clr-border-light: #333333;
+  --clr-text:         #ffffff;
+  --clr-text-muted:   #999999;
+  --clr-accent:       #ffffff;
+  --clr-nav-bg:       #000000;
+  --clr-inv:          #000000;
+  --clr-inv-bg:       #ffffff;
+}
+
+/* ── Reset ── */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ── Body ── */
+body {
+  font-family: var(--font-main);
+  background: var(--clr-bg);
+  color: var(--clr-text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background 0.2s, color 0.2s;
+}
+
+/* ── Typography Utilities ── */
+.mono {
+  font-family: var(--font-mono);
+}
+
+.tracking-swiss {
+  letter-spacing: -0.02em;
+}
+
+.tracking-mono {
+  letter-spacing: 0.05em;
+}

@@ -1,0 +1,137 @@
+{% extends "layout.html" %}
+{% block title %}Grade — {{ sub.student.username }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-6 py-10">
+
+  <div class="mb-8">
+    <a href="{{ url_for('assignmentDetail', aid=sub.assignment_id) }}" class="text-xs text-gray-500 hover:text-gray-400 mono flex items-center gap-1 mb-5">← Back to assignment</a>
+    <div class="flex items-start justify-between flex-wrap gap-4">
+      <div>
+        <h1 class="text-2xl font-bold tracking-tight mb-1">Grading Submission</h1>
+        <p class="text-sm text-gray-500">
+          <span class="font-semibold" style="color:var(--clr-text);">{{ sub.student.username }}</span>
+          · {{ sub.assignment.title }}
+          · submitted {{ sub.submitted_at.strftime('%b %d, %Y at %H:%M') }}
+        </p>
+      </div>
+      {% if sub.grade %}
+      <span class="tag tag-green text-sm px-3 py-1 flex-shrink-0">{{ sub.grade }}</span>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="grid md:grid-cols-3 gap-8">
+    <div class="md:col-span-2 space-y-6">
+
+      <!-- Hypothesis -->
+      {% if sub.hypothesis %}
+      <div class="card p-6">
+        <h2 class="font-semibold text-xs mb-3 text-gray-400 uppercase tracking-wide">Student's Hypothesis (stated before running)</h2>
+        <p class="text-sm leading-relaxed italic" style="color:var(--clr-text);">"{{ sub.hypothesis }}"</p>
+      </div>
+      {% endif %}
+
+      <!-- Q&A -->
+      {% if qa %}
+      <div class="card p-6">
+        <h2 class="font-semibold text-xs mb-5 text-gray-400 uppercase tracking-wide">Student Answers</h2>
+        <div class="space-y-6">
+          {% for q, a in qa %}
+          <div class="space-y-2">
+            <p class="text-sm font-medium">{{ loop.index }}. {{ q }}</p>
+            <div class="p-3 text-sm leading-relaxed"
+                 style="background:var(--clr-surface);border:1px solid var(--clr-border-light);color:var(--clr-text-muted);">
+              {% if a %}{{ a }}{% else %}<span class="text-gray-500 italic">No answer provided.</span>{% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Observations -->
+      {% if sub.observations %}
+      <div class="card p-6">
+        <h2 class="font-semibold text-xs mb-3 text-gray-400 uppercase tracking-wide">Overall Observations</h2>
+        <p class="text-sm leading-relaxed">{{ sub.observations }}</p>
+      </div>
+      {% endif %}
+
+      <!-- Sim preview -->
+      {% if sub.config_json %}
+      <div class="card overflow-hidden">
+        <div class="px-5 py-3 flex items-center justify-between" style="border-bottom:1px solid var(--clr-border-light);">
+          <h2 class="font-semibold text-sm">Student's Simulation</h2>
+          <button id="load-btn" onclick="loadStudentSim()" class="btn btn-secondary btn-sm">▶ Load Preview</button>
+        </div>
+        <div id="sim-frame" style="height:320px;background:#03050c;display:none;">
+          <canvas id="sim-canvas" style="width:100%;height:100%;display:block;"></canvas>
+        </div>
+        <div class="px-5 py-2" style="border-top:1px solid var(--clr-border-light);background:rgba(2,6,23,0.40);backdrop-filter:blur(12px);display:none;" id="sim-info">
+          <p class="mono text-[10px] text-gray-500" id="sim-body-info"></p>
+        </div>
+      </div>
+      {% endif %}
+
+    </div>
+
+    <!-- Grading sidebar -->
+    <div>
+      <div class="card p-5 sticky top-20">
+        <h3 class="font-semibold text-sm mb-4">Grade & Feedback</h3>
+        <form method="POST" class="space-y-4">
+          <div class="field">
+            <label>Grade</label>
+            <select name="grade">
+              <option value="">— select —</option>
+              {% for g in ['A+','A','A-','B+','B','B-','C+','C','C-','D','F','Pass','Fail','Excellent','Good','Satisfactory','Needs Improvement'] %}
+              <option value="{{ g }}" {% if sub.grade == g %}selected{% endif %}>{{ g }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="field">
+            <label>Written Feedback</label>
+            <textarea name="feedback" rows="7" style="resize:vertical;"
+                      placeholder="Specific, constructive comments: what was observed correctly, what could be better, what to explore next…">{{ sub.feedback or '' }}</textarea>
+          </div>
+
+          <!-- Quick feedback templates -->
+          <div>
+            <p class="text-[10px] text-gray-500 mb-2">Quick inserts:</p>
+            <div class="flex flex-wrap gap-1.5">
+              {% for label, text in [
+                ('Good obs.', 'Strong observational detail. '),
+                ('Missed key point', 'The key phenomenon to notice is: '),
+                ('Try chaos', 'Try changing the initial position by just 1 unit to see sensitivity to initial conditions. '),
+                ('Read concept', 'I recommend reading the concept page more carefully — the physics section explains why this happens. '),
+              ] %}
+              <button type="button"
+                      onclick="var ta=document.querySelector('[name=feedback]');ta.value+='{{ text }}';"
+                      class="btn btn-ghost btn-sm text-[10px] py-1">{{ label }}</button>
+              {% endfor %}
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-full justify-center">
+            Save Grade →
+          </button>
+        </form>
+
+        {% if sub.graded_at %}
+        <p class="text-[10px] text-gray-500 mono mt-3 text-center">
+          Last graded {{ sub.graded_at.strftime('%b %d, %Y') }}
+        </p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Jinja config injection -->
+<script>window.RAW_CONFIG = {{ sub.config_json | safe if sub.config_json else '{}' }};</script>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/gradeSubmission.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "layout.html" %}
+{% block title %}Sign In{% endblock %}
+
+{% block content %}
+<div class="min-h-[70vh] flex items-center justify-center px-6 py-16">
+  <div class="w-full max-w-sm">
+    <div class="text-center mb-8">
+      <div class="inline-flex items-center gap-2 mb-4">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="4" fill="#4f9cf9"/>
+          <circle cx="12" cy="12" r="8.5" stroke="#4f9cf9" stroke-width="1" stroke-opacity=".3" stroke-dasharray="2 1.5"/>
+        </svg>
+        <span style="font-weight:700;font-size:17px;letter-spacing:-.02em;">OrbitLab</span>
+      </div>
+      <h1 class="text-2xl font-bold tracking-tight">Welcome back</h1>
+      <p class="text-sm text-gray-500 mt-1">Sign in to your account to continue.</p>
+    </div>
+
+    <div class="card p-7 space-y-4">
+      <form method="POST" class="space-y-4">
+        <div class="field">
+          <label>Username</label>
+          <input type="text" name="username" required autofocus placeholder="your_username">
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input type="password" name="password" required placeholder="••••••••">
+        </div>
+        <button type="submit" class="btn btn-primary w-full justify-center" style="padding:10px;">
+          Sign in →
+        </button>
+      </form>
+    </div>
+
+    <p class="text-center text-xs text-gray-500 mt-5">
+      No account yet?
+      <a href="{{ url_for('register') }}" style="color:#4f9cf9;" class="hover:underline">Create one</a>
+    </p>
+
+    <div class="mt-6 card p-4">
+      <p class="text-[10px] text-gray-500 mono mb-2">DEMO ACCOUNTS</p>
+      <div class="space-y-1 text-xs text-gray-500">
+        <p>Teacher: <span class="mono text-gray-400">professor</span> / <span class="mono text-gray-400">teach123</span></p>
+        <p>Admin: <span class="mono text-gray-400">admin</span> / <span class="mono text-gray-400">admin123</span></p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

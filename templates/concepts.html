@@ -1,0 +1,58 @@
+{% extends "layout.html" %}
+{% block title %}Orbital Mechanics Concepts{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto px-6 py-12">
+  <div class="mb-12 pb-8" style="border-bottom:1px solid var(--clr-border);">
+    <p class="section-eyebrow mb-2">Theory & Explanation</p>
+    <h1 class="text-5xl font-black uppercase tracking-tighter mb-4">Concept Library</h1>
+    <p class="text-gray-500 max-w-2xl text-sm leading-relaxed font-medium">
+      Each concept links to a live Wikipedia explanation alongside key physics notes and a runnable demo.
+      Start here before tackling assignments — the theory makes the simulations much more meaningful.
+    </p>
+  </div>
+
+  {% set concept_meta = {
+    'keplers_laws':      ("Kepler's Laws",          'The three laws governing how planets orbit the Sun.',  'gray',   'nbody',    '01'),
+    'two_body':          ('Two-Body Problem',        'The exact analytical solution for two gravitationally bound masses.',   'gray',   '2body',    '02'),
+    'three_body':        ('Three-Body Problem',      'Why adding a third mass makes the system chaotic.',                         'gray', '3body',    '03'),
+    'lagrange_points':   ('Lagrange Points',         'Five equilibrium points where gravity and centrifugal force balance.', 'gray', 'nbody', '04'),
+    'orbital_mechanics': ('Orbital Mechanics',       'The branch of physics governing motion of objects in space.',              'gray',   'nbody',    '05'),
+    'escape_velocity':   ('Escape Velocity',         'The minimum speed needed to break free from a gravitational field.',          'gray', '2body',    '06'),
+    'hill_sphere':       ('Hill Sphere',             'The region around a body where it can hold satellites.',               'gray',   'nbody',    '07'),
+    'tidal_locking':     ('Tidal Locking',           'How tidal forces slow rotation until a moon always faces its planet.', 'gray', '2body', '08'),
+    'hohmann':           ('Hohmann Transfer',        'The most fuel-efficient elliptical path between two circular orbits.',  'gray',  '2body',    '09'),
+    'vis_viva':          ('Vis-Viva Equation',       'The equation relating orbital speed, distance, and semi-major axis.',           'gray',   '2body',    '10'),
+  } %}
+
+  <div class="grid md:grid-cols-2 gap-0" style="border-left:1px solid var(--clr-border); border-top:1px solid var(--clr-border);">
+    {% for key, (name, summary, color, demo_type, icon) in concept_meta.items() %}
+    <a href="{{ url_for('conceptDetail', key=key) }}" class="p-8 hover:bg-black hover:text-white transition group flex gap-6" style="border-right:1px solid var(--clr-border); border-bottom:1px solid var(--clr-border);">
+      <div class="w-12 h-12 flex-shrink-0 flex items-center justify-center mono text-xs font-black" style="border:1px solid var(--clr-border); transition: border-color 0.2s;">
+        {{ icon }}
+      </div>
+      <div class="flex-grow min-w-0">
+        <div class="flex items-center gap-3 mb-2 flex-wrap">
+          <h3 class="font-bold text-sm uppercase tracking-tight">{{ name }}</h3>
+          <span class="tag" style="transition: border-color 0.2s;">{{ demo_type }}</span>
+        </div>
+        <p class="text-xs opacity-60 leading-relaxed line-clamp-2 font-medium">{{ summary }}</p>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+
+  <div class="mt-20 p-10" style="border:1px solid var(--clr-border); background:var(--clr-bg);">
+    <div class="flex items-start gap-6">
+      <div class="w-12 h-12 flex items-center justify-center flex-shrink-0" style="border:1px solid var(--clr-border);">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--clr-text);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+      </div>
+      <div>
+        <h3 class="font-black text-sm uppercase tracking-widest mb-2">Learn by doing</h3>
+        <p class="text-xs text-gray-500 leading-relaxed mb-6 font-medium">Every concept has a linked demo you can run directly in the sandbox. Reading the theory and then watching the simulation is the fastest way to actually understand orbital mechanics.</p>
+        <a href="{{ url_for('demos') }}" class="btn btn-primary btn-sm">Browse all demos</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

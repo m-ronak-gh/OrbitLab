@@ -1,0 +1,155 @@
+{% extends "layout.html" %}
+{% block title %}{{ 'Edit' if assignment else 'New' }} Assignment{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-6 py-10">
+
+  <div class="mb-8">
+    <a href="{{ url_for('dashboard') }}" class="text-xs text-gray-500 hover:text-gray-400 mono flex items-center gap-1 mb-5">← Dashboard</a>
+    <h1 class="text-3xl font-bold tracking-tight">
+      {{ 'Edit Assignment' if assignment else 'New Assignment' }}
+    </h1>
+    <p class="text-sm text-gray-500 mt-1.5 leading-relaxed">
+      Design an investigation for your students. A starter simulation gives them a starting point; questions guide what they observe and write up.
+    </p>
+  </div>
+
+  <form method="POST" class="space-y-6">
+
+    <!-- Basic info -->
+    <div class="card p-6 space-y-5">
+      <h2 class="font-semibold text-xs text-gray-400 uppercase tracking-wide">Basic Info</h2>
+
+      <div class="field">
+        <label>Assignment Title</label>
+        <input type="text" name="title" required
+               value="{{ assignment.title if assignment else '' }}"
+               placeholder="e.g. Observe Kepler's Second Law">
+      </div>
+
+      <div class="field">
+        <label>Instructions — what should students do and observe?</label>
+        <textarea name="description" rows="5" required
+                  placeholder="Describe the investigation clearly. Tell them which demo or configuration to load, what to change, and what to look for. The more specific, the better."
+                  style="resize:vertical;">{{ assignment.description if assignment else '' }}</textarea>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="field">
+          <label>Related Concept</label>
+          <select name="concept">
+            <option value="">— none —</option>
+            {% for key in ['keplers_laws','two_body','three_body','lagrange_points','orbital_mechanics','escape_velocity','hill_sphere','tidal_locking','hohmann','vis_viva'] %}
+            <option value="{{ key }}"
+              {% if assignment and assignment.concept == key %}selected{% endif %}>
+              {{ key | replace('_',' ') | title }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label>Scenario Type</label>
+          <select name="scenario">
+            {% for v, l in [('2body','2-Body'),('3body','3-Body'),('nbody','N-Body'),('custom','Custom')] %}
+            <option value="{{ v }}" {% if assignment and assignment.scenario == v %}selected{% endif %}>{{ l }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label>Difficulty</label>
+          <select name="difficulty">
+            {% for v, l in [('beginner','Beginner'),('intermediate','Intermediate'),('advanced','Advanced')] %}
+            <option value="{{ v }}" {% if assignment and (assignment.difficulty or 'beginner') == v %}selected{% endif %}>{{ l }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="field" style="max-width:200px;">
+        <label>Due Date (optional)</label>
+        <input type="date" name="due_date"
+               value="{{ assignment.due_date.strftime('%Y-%m-%d') if assignment and assignment.due_date else '' }}">
+      </div>
+    </div>
+
+    <!-- Learning Objectives -->
+    <div class="card p-6 space-y-4">
+      <div>
+        <h2 class="font-semibold text-xs text-gray-400 uppercase tracking-wide mb-1">Learning Objectives</h2>
+        <p class="text-xs text-gray-600">One objective per line. These are shown to students before they begin so they know what they're trying to learn.</p>
+      </div>
+      <textarea name="learning_objectives" rows="4" style="resize:vertical;"
+                placeholder="Observe that planets speed up near the Sun (Kepler's Second Law)&#10;Connect orbital speed to conservation of angular momentum&#10;Predict how orbital period scales with distance">{{ objectives_text if objectives_text else '' }}</textarea>
+    </div>
+
+    <!-- Starter simulation -->
+    <div class="card p-6 space-y-4">
+      <div>
+        <h2 class="font-semibold text-xs text-gray-400 uppercase tracking-wide mb-1">Starter Simulation <span class="text-gray-600 font-normal normal-case">— optional</span></h2>
+        <p class="text-xs text-gray-600">If provided, the student's sandbox will pre-load this configuration. Click a demo to use it as your starter, or paste JSON directly.</p>
+      </div>
+
+      <div class="flex flex-wrap gap-2">
+        {% for key, d in [
+          ('solar_system','Inner Solar System'),('binary_star','Binary Star'),
+          ('unequal_binary','Star + Planet'),('figure_eight','Figure-Eight'),
+          ('lagrange_trojan','Lagrange Trojans'),('hyperbolic_flyby','Slingshot'),
+          ('chaotic_three','Chaotic 3-Body'),('hohmann_transfer','Hohmann Transfer'),
+        ] %}
+        <button type="button" onclick="useDemo('{{ key }}')" class="btn btn-secondary btn-sm">{{ d }}</button>
+        {% endfor %}
+        <button type="button" onclick="clearConfig()" class="btn btn-ghost btn-sm">Clear</button>
+      </div>
+
+      <div id="config-status" class="text-[11px] text-gray-600 mono" style="display:none;"></div>
+      <textarea id="config-preview" name="config_json" rows="3"
+                placeholder='{"G":100,"softening":0.5,"bodies":[...]}'
+                style="resize:vertical;font-family:'JetBrains Mono',monospace;font-size:11px;opacity:.6;">{{ assignment.config_json or '' }}</textarea>
+    </div>
+
+    <!-- Questions -->
+    <div class="card p-6 space-y-4">
+      <div>
+        <h2 class="font-semibold text-xs text-gray-400 uppercase tracking-wide mb-1">Questions</h2>
+        <p class="text-xs text-gray-600">One question per line. Students will answer each in a separate text field. Good questions ask them to observe, explain, or predict — not just describe.</p>
+      </div>
+      <textarea name="questions" rows="6" style="resize:vertical;"
+                placeholder="What happens to Earth's speed when it's closest to the Sun?&#10;Why does Mercury orbit faster than Mars?&#10;Predict: if you doubled Earth's distance, how would its period change?">{{ questions_text if questions_text else '' }}</textarea>
+      <p class="text-[11px] text-gray-600">💡 Tip: mix observational questions ("what do you see?") with analytical ones ("why does this happen?") and predictive ones ("what would happen if…?").</p>
+    </div>
+
+    <!-- Publish -->
+    <div class="card p-6">
+      <div class="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h2 class="font-semibold text-sm mb-1">Publish</h2>
+          <p class="text-xs text-gray-500">Published assignments are visible to all students. Drafts are only visible to you.</p>
+        </div>
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="checkbox" name="publish" id="publish-toggle"
+                 {% if assignment and assignment.is_published %}checked{% endif %}
+                 class="w-4 h-4 rounded" style="accent-color:#34d399;">
+          <span class="text-sm font-medium">Publish immediately</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="flex justify-between items-center pt-2">
+      <a href="{{ url_for('dashboard') }}" class="btn btn-ghost">← Cancel</a>
+      <div class="flex gap-2">
+        <button type="submit" class="btn btn-secondary btn-lg">Save as draft</button>
+        <button type="submit" onclick="document.getElementById('publish-toggle').checked=true;"
+                class="btn btn-primary btn-lg">Save & Publish →</button>
+      </div>
+    </div>
+
+  </form>
+</div>
+
+<!-- Jinja data injection -->
+<script>window.DEMO_CONFIGS = {{ demo_configs_json | safe }};</script>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/assignmentForm.js') }}"></script>
+{% endblock %}

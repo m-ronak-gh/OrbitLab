@@ -1,0 +1,335 @@
+/* ══════════════════════════════════════════════
+   OrbitLab — Component Styles
+   Reusable UI: cards, buttons, fields, tags, etc.
+   ══════════════════════════════════════════════ */
+
+/* ── Cards ── */
+.card {
+  background: var(--clr-bg);
+  border: 1px solid var(--clr-border);
+  transition: background 0.1s, border-color 0.2s;
+}
+
+.card:hover {
+  background: var(--clr-surface);
+}
+
+/* ── Buttons ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border: 1px solid var(--clr-border);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.1s;
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-family: var(--font-main);
+  color: var(--clr-text);
+  background: transparent;
+}
+
+.btn-primary {
+  background: var(--clr-border);
+  color: var(--clr-inv);
+}
+
+.btn-primary:hover {
+  opacity: 0.8;
+}
+
+.btn-secondary {
+  background: var(--clr-bg);
+  color: var(--clr-border);
+}
+
+.btn-secondary:hover {
+  background: var(--clr-surface2);
+}
+
+.btn-ghost {
+  border-color: transparent;
+  color: var(--clr-text);
+}
+
+.btn-ghost:hover {
+  background: var(--clr-surface2);
+}
+
+.btn-danger {
+  background: #dc2626;
+  color: #ffffff;
+  border-color: #dc2626;
+}
+
+.btn-danger:hover {
+  opacity: 0.85;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 11px;
+}
+
+.btn-lg {
+  padding: 12px 24px;
+  font-size: 14px;
+}
+
+/* ── Form Fields ── */
+.field label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--clr-text);
+  margin-bottom: 4px;
+  display: block;
+}
+
+.field input,
+.field textarea,
+.field select {
+  background: var(--clr-bg);
+  border: 1px solid var(--clr-border);
+  padding: 10px;
+  font-size: 13px;
+  color: var(--clr-text);
+  font-family: var(--font-main);
+  outline: none;
+  width: 100%;
+}
+
+.field input:focus {
+  background: var(--clr-surface);
+}
+
+/* ── Tags / Badges ── */
+.tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border: 1px solid var(--clr-border);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  background: var(--clr-bg);
+  color: var(--clr-text);
+}
+
+.tag-green {
+  border-color: #34d399;
+  color: #34d399;
+  background: rgba(52, 211, 153, 0.08);
+}
+
+.tag-blue {
+  border-color: #4f9cf9;
+  color: #4f9cf9;
+  background: rgba(79, 156, 249, 0.08);
+}
+
+.tag-orange {
+  border-color: #fb923c;
+  color: #fb923c;
+  background: rgba(251, 146, 60, 0.08);
+}
+
+.tag-red {
+  border-color: #f87171;
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.08);
+}
+
+.tag-gray {
+  border-color: var(--clr-border-light);
+  color: var(--clr-text-muted);
+  background: var(--clr-surface);
+}
+
+.tag-purple {
+  border-color: #a78bfa;
+  color: #a78bfa;
+  background: rgba(167, 139, 250, 0.08);
+}
+
+/* ── Flash Messages ── */
+.flash {
+  padding: 12px;
+  border-bottom: 1px solid var(--clr-border);
+  background: var(--clr-border);
+  color: var(--clr-inv);
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+/* ── Navigation Links ── */
+.nav-link {
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--clr-text);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: 1px solid transparent;
+  text-decoration: none;
+  transition: color 0.2s, background 0.2s, border-color 0.2s;
+}
+
+.nav-link:hover {
+  border-color: var(--clr-border);
+}
+
+.nav-link.active {
+  background: var(--clr-border);
+  color: var(--clr-inv);
+}
+
+/* ── Range Input ── */
+input[type=range] {
+  -webkit-appearance: none;
+  height: 1px;
+  background: var(--clr-border);
+  width: 100%;
+}
+
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  background: var(--clr-border);
+  border: 1px solid var(--clr-bg);
+  cursor: pointer;
+}
+
+/* ── Divider ── */
+.divider {
+  height: 1px;
+  background: var(--clr-border);
+}
+
+/* ── Theme Toggle ── */
+#theme-toggle {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--clr-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: transparent;
+  transition: all 0.1s;
+  color: var(--clr-text);
+}
+
+#theme-toggle:hover {
+  background: var(--clr-surface2);
+}
+
+/* ── Stat Badges ── */
+.stat-badge {
+  background: var(--clr-bg);
+  border: 1px solid var(--clr-border);
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat-badge .val {
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--clr-text);
+}
+
+.stat-badge .lbl {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--clr-text-muted);
+}
+
+/* ── Progress Bar ── */
+.progress-bar {
+  height: 3px;
+  background: var(--clr-surface2);
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--clr-accent);
+  transition: width 0.3s;
+}
+
+/* ── Concept Pill ── */
+.concept-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border: 1px solid var(--clr-border-light);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--clr-text-muted);
+  text-decoration: none;
+  transition: all 0.15s;
+}
+
+.concept-pill:hover {
+  border-color: var(--clr-border);
+  color: var(--clr-text);
+}
+
+/* ── Section Eyebrow ── */
+.section-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.10em;
+  color: var(--clr-text-muted);
+}
+
+/* ── Glassmorphism ── */
+.glass {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* ── Notification Dot ── */
+.notif-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #f87171;
+  flex-shrink: 0;
+  animation: pulse-dot 2s infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* ── Difficulty Badge ── */
+.difficulty-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 8px;
+  border: 1px solid var(--clr-border-light);
+  color: var(--clr-text-muted);
+}

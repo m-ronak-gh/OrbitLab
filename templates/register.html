@@ -1,0 +1,52 @@
+{% extends "layout.html" %}
+{% block title %}Create Account{% endblock %}
+
+{% block content %}
+<div class="min-h-[70vh] flex items-center justify-center px-6 py-16">
+  <div class="w-full max-w-sm">
+    <div class="text-center mb-8">
+      <div class="inline-flex items-center gap-2 mb-4">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="4" fill="#4f9cf9"/>
+          <circle cx="12" cy="12" r="8.5" stroke="#4f9cf9" stroke-width="1" stroke-opacity=".3" stroke-dasharray="2 1.5"/>
+        </svg>
+        <span style="font-weight:700;font-size:17px;letter-spacing:-.02em;">OrbitLab</span>
+      </div>
+      <h1 class="text-2xl font-bold tracking-tight">Create account</h1>
+      <p class="text-sm text-gray-500 mt-1">Free to use. Start learning orbital mechanics today.</p>
+    </div>
+
+    <div class="card p-7">
+      <form method="POST" class="space-y-4">
+        <div class="field">
+          <label>Username</label>
+          <input type="text" name="username" required autofocus placeholder="choose_a_username">
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" name="email" required placeholder="you@example.com">
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input type="password" name="password" required placeholder="at least 6 characters">
+        </div>
+        <div class="field">
+          <label>I am a…</label>
+          <select name="role">
+            <option value="student">Student — I'll complete assignments</option>
+            <option value="teacher">Teacher — I'll create assignments</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary w-full justify-center" style="padding:10px;margin-top:8px;">
+          Create account →
+        </button>
+      </form>
+    </div>
+
+    <p class="text-center text-xs text-gray-500 mt-5">
+      Already have an account?
+      <a href="{{ url_for('login') }}" style="color:#4f9cf9;" class="hover:underline">Sign in</a>
+    </p>
+  </div>
+</div>
+{% endblock %}

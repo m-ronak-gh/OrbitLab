@@ -1,0 +1,165 @@
+{% extends "layout.html" %}
+{% block title %}{{ assignment.title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-6 py-10">
+
+  <div class="mb-8">
+    <a href="{{ url_for('dashboard') }}" class="text-xs text-gray-500 hover:text-gray-400 mono flex items-center gap-1 mb-5">← Dashboard</a>
+
+    <div class="flex items-start justify-between gap-4 flex-wrap">
+      <div>
+        <h1 class="text-3xl font-bold tracking-tight mb-2">{{ assignment.title }}</h1>
+        <div class="flex items-center gap-3 flex-wrap">
+          {% if assignment.is_published %}
+            <span class="tag tag-green">Published</span>
+          {% else %}
+            <span class="tag tag-gray">Draft</span>
+          {% endif %}
+          {% if assignment.difficulty %}
+            <span class="tag tag-gray diff-{{ assignment.difficulty }}">{{ assignment.difficulty }}</span>
+          {% endif %}
+          {% if assignment.concept %}
+          <a href="{{ url_for('conceptDetail', key=assignment.concept) }}" class="concept-pill">📖 {{ assignment.concept | replace('_',' ') | title }}</a>
+          {% endif %}
+          <span class="text-[10px] mono text-gray-400">by {{ assignment.teacher.username }}</span>
+          {% if assignment.due_date %}
+          <span class="text-[10px] mono text-gray-400">due {{ assignment.due_date.strftime('%b %d, %Y') }}</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="flex gap-2 flex-shrink-0">
+        {% if current_user.is_teacher and (current_user.id == assignment.teacher_id or current_user.is_admin) %}
+          <a href="{{ url_for('edit_assignment', aid=assignment.id) }}" class="btn btn-secondary btn-sm">Edit</a>
+          <form method="POST" action="{{ url_for('delete_assignment', aid=assignment.id) }}" onsubmit="return confirm('Delete this assignment and all submissions?')">
+            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+          </form>
+        {% endif %}
+        {% if not current_user.is_teacher %}
+          {% if my_sub %}
+            <a href="{{ url_for('submitAssignment', aid=assignment.id) }}" class="btn btn-secondary btn-sm">Revise</a>
+          {% else %}
+            <a href="{{ url_for('submitAssignment', aid=assignment.id) }}" class="btn btn-primary btn-sm">Start →</a>
+          {% endif %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="grid md:grid-cols-3 gap-8">
+    <div class="md:col-span-2 space-y-6">
+
+      <!-- Description -->
+      <div class="card p-6">
+        <h2 class="font-semibold text-xs text-gray-400 uppercase tracking-wide mb-3">Instructions</h2>
+        <p class="text-sm leading-relaxed" style="white-space:pre-line;">{{ assignment.description }}</p>
+      </div>
+
+      <!-- Learning Objectives -->
+      {% if objectives %}
+      <div class="card p-6">
+        <h2 class="font-semibold text-xs text-gray-400 uppercase tracking-wide mb-3">Learning Objectives</h2>
+        <ul class="space-y-2">
+          {% for obj in objectives %}
+          <li class="flex gap-2 text-sm">
+            <span style="color:#34d399;">✓</span> {{ obj }}
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+
+      <!-- Questions -->
+      {% if questions %}
+      <div class="card p-6">
+        <h2 class="font-semibold text-xs text-gray-400 uppercase tracking-wide mb-4">Questions</h2>
+        <ol class="space-y-3">
+          {% for q in questions %}
+          <li class="flex gap-2 text-sm leading-relaxed">
+            <span class="mono text-gray-400 font-bold flex-shrink-0">{{ "%02d" | format(loop.index) }}.</span>
+            <span>{{ q }}</span>
+          </li>
+          {% endfor %}
+        </ol>
+      </div>
+      {% endif %}
+
+      <!-- Starter config -->
+      {% if assignment.config_json %}
+      <div class="card p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-semibold text-xs text-gray-400 uppercase tracking-wide">Starter Simulation</h2>
+          <a href="{{ url_for('sandbox') }}" class="btn btn-secondary btn-sm">Preview →</a>
+        </div>
+        <pre class="text-xs mono p-4 overflow-x-auto leading-relaxed" style="background:var(--clr-surface);border:1px solid var(--clr-border-light);color:var(--clr-text-muted);">{{ assignment.config_json }}</pre>
+      </div>
+      {% endif %}
+
+      <!-- My submission status -->
+      {% if my_sub %}
+      <div class="card p-6" style="border-color:{% if my_sub.grade %}rgba(52,211,153,.2){% else %}rgba(79,156,249,.2){% endif %};">
+        <h2 class="font-semibold text-sm mb-3">Your Submission</h2>
+        <div class="flex items-center gap-3 mb-3 flex-wrap">
+          {% if my_sub.grade %}
+            <span class="tag tag-green">{{ my_sub.grade }}</span>
+          {% else %}
+            <span class="tag tag-blue">Submitted</span>
+          {% endif %}
+          <span class="mono text-[10px] text-gray-500">{{ my_sub.submitted_at.strftime('%b %d, %Y at %H:%M') }}</span>
+        </div>
+        {% if my_sub.feedback %}
+        <div class="p-3 text-sm leading-relaxed"
+             style="background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.12);color:var(--clr-text-muted);">
+          <span style="color:#34d399;font-weight:600;">Feedback:</span> {{ my_sub.feedback }}
+        </div>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Sidebar -->
+    <div class="space-y-5">
+      {% if not current_user.is_teacher %}
+      <div class="card p-5">
+        <h3 class="font-semibold text-sm mb-2">Actions</h3>
+        {% if my_sub %}
+          <a href="{{ url_for('submitAssignment', aid=assignment.id) }}" class="btn btn-secondary w-full justify-center mb-2">Revise Submission</a>
+        {% else %}
+          <a href="{{ url_for('submitAssignment', aid=assignment.id) }}" class="btn btn-primary w-full justify-center mb-2">Start Assignment →</a>
+        {% endif %}
+        {% if assignment.concept %}
+          <a href="{{ url_for('conceptDetail', key=assignment.concept) }}" class="btn btn-ghost w-full justify-center btn-sm">📖 Read Concept</a>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      {% if (current_user.is_teacher or current_user.is_admin) and subs %}
+      <div class="card p-5">
+        <h3 class="font-semibold text-sm mb-4">Submissions ({{ subs|length }})</h3>
+        <div class="space-y-1">
+          {% for s in subs %}
+          <a href="{{ url_for('gradeSubmission', sid=s.id) }}"
+             class="flex items-center justify-between py-2.5 transition" style="border-bottom:1px solid var(--clr-border-light);">
+            <div class="flex items-center gap-2 min-w-0">
+              {% if not s.grade %}
+              <span class="notif-dot"></span>
+              {% endif %}
+              <span class="text-sm truncate">{{ s.student.username }}</span>
+            </div>
+            <div class="flex items-center gap-2 flex-shrink-0">
+              {% if s.grade %}
+                <span class="tag tag-green text-[9px]">{{ s.grade }}</span>
+              {% else %}
+                <span class="tag tag-orange text-[9px]">Needs Grading</span>
+              {% endif %}
+            </div>
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

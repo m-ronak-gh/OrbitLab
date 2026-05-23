@@ -1,0 +1,133 @@
+{% extends "layout.html" %}
+{% block title %}{{ info.title if info else key | replace('_',' ') | title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-6 py-12">
+
+  <div class="mb-12 pb-8" style="border-bottom:1px solid var(--clr-border);">
+    <a href="{{ url_for('concepts') }}" class="text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-gray-800 transition flex items-center gap-2 mb-6">
+      ← Back to concepts
+    </a>
+    <h1 class="text-5xl font-black uppercase tracking-tighter mb-4">
+      {{ info.title if info else key | replace('_',' ') | title }}
+    </h1>
+    <div class="flex items-center gap-3">
+      <span class="tag">SOURCE: WIKIPEDIA</span>
+      <span class="text-[10px] font-bold text-gray-400 uppercase">REST API INTEGRATION</span>
+    </div>
+  </div>
+
+  <div class="grid md:grid-cols-3 gap-12">
+
+    <div class="md:col-span-2 space-y-12">
+      <!-- Wikipedia extract -->
+      <div style="border-left:4px solid var(--clr-border); padding-left:2rem; padding-top:0.5rem; padding-bottom:0.5rem;">
+        {% if info %}
+          <p class="font-medium leading-relaxed text-lg" style="color:var(--clr-text);">{{ info.extract }}</p>
+          <a href="{{ info.url }}" target="_blank" rel="noopener"
+             class="inline-flex items-center gap-2 mt-8 text-[10px] font-black uppercase tracking-widest pb-1 hover:bg-black hover:text-white transition" style="border-bottom:1px solid var(--clr-border);">
+            Full article on Wikipedia
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+            </svg>
+          </a>
+        {% else %}
+          <div class="flex items-center gap-4">
+            <div class="w-4 h-4 animate-spin" style="border:1px solid var(--clr-border);"></div>
+            <p class="text-xs font-bold uppercase tracking-widest text-gray-400">Loading summary...</p>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Key physics notes -->
+      {% set notes = {
+        'keplers_laws': [
+          ('First Law — Ellipses', 'Every planet orbits the Sun in an ellipse with the Sun at one focus. A circle is a special case.'),
+          ('Second Law — Equal Areas', 'A line from a planet to the Sun sweeps equal areas in equal time intervals.'),
+          ('Third Law — T² ∝ a³', 'The square of the orbital period is proportional to the cube of the semi-major axis.'),
+        ],
+        'two_body': [
+          ('Reduced Mass', 'The two-body problem reduces to a one-body problem: a particle orbiting a fixed centre.'),
+          ('Conic Sections', 'The shape of the orbit depends on total energy: ellipse, parabola, or hyperbola.'),
+          ('Conservation Laws', 'Energy and angular momentum are both conserved — which is why orbits close and repeat.'),
+        ],
+        'three_body': [
+          ('No General Solution', 'There is no closed-form analytic solution for the general three-body problem.'),
+          ('Sensitive Dependence', 'Tiny differences in initial conditions lead to completely different trajectories.'),
+          ('Special Solutions', 'A few exact periodic solutions exist like the figure-eight choreography.'),
+        ],
+        'lagrange_points': [
+          ('L1, L2, L3 (Unstable)', 'The three collinear Lagrange points are unstable equilibrium points.'),
+          ('L4, L5 (Stable)', 'L4 and L5 form equilateral triangles with the two primaries and are stable.'),
+          ('Practical Use', 'The James Webb Space Telescope orbits the Sun-Earth L2 point.'),
+        ],
+        'escape_velocity': [
+          ('Formula', 'v_escape = √(2GM/r). Minimum speed needed to break free from gravity.'),
+          ('Independence', 'Escape velocity is independent of launch direction.'),
+          ('Factor of √2', 'Escape velocity is always √2 times the circular orbital speed.'),
+        ],
+        'hohmann': [
+          ('Two Burns', 'Requires exactly two engine burns: one to raise apoapsis, one to circularize.'),
+          ('Efficiency', 'Minimizes the delta-v required between circular orbits.'),
+          ('Transfer Time', 'Usually follows a half-ellipse coasting trajectory.'),
+        ],
+        'vis_viva': [
+          ('The Equation', 'v² = GM(2/r - 1/a). Relates speed, distance, and semi-major axis.'),
+          ('Circular Orbit', 'For a circular orbit a = r, so v = √(GM/r).'),
+          ('Escape', 'At escape, the orbit becomes a parabola with a → ∞.'),
+        ],
+      } %}
+
+      {% if key in notes %}
+      <div class="space-y-8">
+        <h2 class="text-xs font-black uppercase tracking-widest text-gray-400">Technical Foundation</h2>
+        <div class="space-y-10">
+          {% for title, body in notes[key] %}
+          <div class="flex gap-6">
+            <div class="text-[10px] font-black uppercase tracking-tighter text-gray-400 mt-1">0{{ loop.index }}</div>
+            <div>
+              <div class="text-sm font-black uppercase tracking-tight mb-2">{{ title }}</div>
+              <div class="text-sm text-gray-500 font-medium leading-relaxed">{{ body }}</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Sidebar: demos & actions -->
+    <div class="space-y-12">
+      <div class="p-8" style="border:1px solid var(--clr-border); background:var(--clr-bg);">
+        <h3 class="text-xs font-black uppercase tracking-widest mb-6">Interactive Demo</h3>
+        <div class="space-y-2">
+          {% if related_demos %}
+            {% for dkey, d in related_demos.items() %}
+            <a href="{{ url_for('sandbox', demo=dkey) }}" class="btn btn-primary w-full justify-center btn-sm">
+              {{ d.title }}
+            </a>
+            {% endfor %}
+          {% else %}
+            <a href="{{ url_for('sandbox') }}" class="btn btn-primary w-full justify-center">Open Sandbox</a>
+          {% endif %}
+        </div>
+        <div class="mt-6 pt-6" style="border-top:1px solid var(--clr-border-light);">
+          <a href="{{ url_for('demos') }}" class="text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-gray-800 transition">Browse all demos →</a>
+        </div>
+      </div>
+
+      <div class="space-y-4">
+        <h3 class="text-[10px] font-black uppercase tracking-widest text-gray-400">Navigation</h3>
+        <div class="space-y-0">
+          {% for k in ['keplers_laws','two_body','three_body','lagrange_points','escape_velocity','hohmann','vis_viva','tidal_locking','hill_sphere'] if k != key %}
+          <a href="{{ url_for('conceptDetail', key=k) }}"
+             class="block text-xs font-bold uppercase tracking-tight py-3 hover:pl-2 transition" style="border-bottom:1px solid var(--clr-border-light);">
+            {{ k | replace('_',' ') }}
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

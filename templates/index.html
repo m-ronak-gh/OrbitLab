@@ -1,0 +1,218 @@
+{% extends "layout.html" %}
+{% block title %}OrbitLab — Learn Orbital Mechanics{% endblock %}
+
+{% block content %}
+<!-- Hero -->
+<section style="background:var(--clr-bg); border-bottom:1px solid var(--clr-border);" class="relative overflow-hidden">
+  <div class="max-w-5xl mx-auto px-6 pt-24 pb-20 text-center">
+    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 mb-8" style="border:1px solid var(--clr-border);">
+      <span class="w-1.5 h-1.5" style="background:var(--clr-text);"></span>
+      <span class="mono text-xs tracking-widest font-bold" style="color:var(--clr-text);">ORBITAL MECHANICS LEARNING PLATFORM</span>
+    </div>
+
+    <h1 class="text-5xl md:text-8xl font-black tracking-tighter leading-none mb-8 uppercase" style="color:var(--clr-text);">
+      Learn gravity<br>by building it.
+    </h1>
+    <p class="text-lg text-gray-500 max-w-2xl mx-auto mb-12 leading-relaxed font-medium">
+      Simulate two-body orbits, three-body chaos, and N-body solar systems.
+      Complete guided assignments. Understand the physics — not just the equations.
+    </p>
+
+    <div class="flex flex-wrap gap-3 justify-center">
+      <a href="{{ url_for('sandbox') }}" class="btn btn-primary btn-lg">
+        Open Sandbox →
+      </a>
+      <a href="{{ url_for('demos') }}" class="btn btn-secondary btn-lg">
+        Browse {{ demo_count }} Demos
+      </a>
+      {% if not current_user.is_authenticated %}
+      <a href="{{ url_for('register') }}" class="btn btn-ghost btn-lg">
+        Create account
+      </a>
+      {% endif %}
+    </div>
+
+    {% if current_user.is_authenticated %}
+    <div class="mt-8">
+      <a href="{{ url_for('dashboard') }}" class="concept-pill">
+        Go to your dashboard
+      </a>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- Feature cards -->
+<section class="max-w-6xl mx-auto px-6 py-16">
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-0" style="border-left:1px solid var(--clr-border); border-top:1px solid var(--clr-border);">
+
+    <div class="p-8 space-y-4 hover:bg-gray-50 transition" style="border-right:1px solid var(--clr-border); border-bottom:1px solid var(--clr-border);">
+      <div class="w-10 h-10 flex items-center justify-center" style="border:1px solid var(--clr-border); background:var(--clr-bg);">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--clr-text);">
+          <path stroke-linecap="round" stroke-width="1.5" d="M12 2a10 10 0 100 20A10 10 0 0012 2z" stroke-dasharray="3 2"/>
+          <circle cx="12" cy="12" r="3" fill="currentColor"/>
+        </svg>
+      </div>
+      <h3 class="font-black text-xs uppercase tracking-widest">Interactive Physics Sandbox</h3>
+      <p class="text-sm text-gray-500 leading-relaxed">
+        Place bodies anywhere, drag to set velocities, and watch Newtonian gravity unfold in real time. 
+        Leapfrog integrator with orbit trails.
+      </p>
+    </div>
+
+    <div class="p-8 space-y-4 hover:bg-gray-50 transition" style="border-right:1px solid var(--clr-border); border-bottom:1px solid var(--clr-border);">
+      <div class="w-10 h-10 flex items-center justify-center" style="border:1px solid var(--clr-border); background:var(--clr-bg);">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--clr-text);">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+        </svg>
+      </div>
+      <h3 class="font-black text-xs uppercase tracking-widest">Guided Assignments</h3>
+      <p class="text-sm text-gray-500 leading-relaxed">
+        Teachers craft structured investigations with starter configurations, targeted questions, 
+        and learning objectives. Students build, observe, hypothesise, and submit.
+      </p>
+    </div>
+
+    <div class="p-8 space-y-4 hover:bg-gray-50 transition" style="border-right:1px solid var(--clr-border); border-bottom:1px solid var(--clr-border);">
+      <div class="w-10 h-10 flex items-center justify-center" style="border:1px solid var(--clr-border); background:var(--clr-bg);">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--clr-text);">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+        </svg>
+      </div>
+      <h3 class="font-black text-xs uppercase tracking-widest">Concept Library</h3>
+      <p class="text-sm text-gray-500 leading-relaxed">
+        Ten core topics — Kepler's Laws, Lagrange Points, the Vis-Viva Equation and more — 
+        each with a live Wikipedia explanation, key physics notes, and a runnable demo.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- Scenario types -->
+<section class="max-w-6xl mx-auto px-6 py-16">
+  <div class="text-center mb-12">
+    <p class="section-eyebrow mb-2">Capabilities</p>
+    <h2 class="text-4xl font-black uppercase tracking-tighter">Simulation Scenarios</h2>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-0" style="border-left:1px solid var(--clr-border); border-top:1px solid var(--clr-border);">
+    <a href="{{ url_for('sandbox', demo='binary_star') }}" class="p-6 hover:bg-black hover:text-white transition group" style="border-right:1px solid var(--clr-border); border-bottom:1px solid var(--clr-border);">
+      <div class="flex items-center gap-2 mb-4">
+        <span class="tag">2-Body</span>
+      </div>
+      <div class="font-bold text-sm mb-2 uppercase tracking-tight">Two-Body Orbits</div>
+      <div class="text-xs opacity-60 leading-relaxed">Binary stars, slingshots, elliptical and hyperbolic trajectories. Analytically exact.</div>
+    </a>
+    <a href="{{ url_for('sandbox', demo='figure_eight') }}" class="p-6 hover:bg-black hover:text-white transition group" style="border-right:1px solid var(--clr-border); border-bottom:1px solid var(--clr-border);">
+      <div class="flex items-center gap-2 mb-4">
+        <span class="tag">3-Body</span>
+      </div>
+      <div class="font-bold text-sm mb-2 uppercase tracking-tight">Three-Body Chaos</div>
+      <div class="text-xs opacity-60 leading-relaxed">Figure-eight choreography, Lagrange point stability, chaotic divergence.</div>
+    </a>
+    <a href="{{ url_for('sandbox', demo='solar_system') }}" class="p-6 hover:bg-black hover:text-white transition group" style="border-right:1px solid var(--clr-border); border-bottom:1px solid var(--clr-border);">
+      <div class="flex items-center gap-2 mb-4">
+        <span class="tag">N-Body</span>
+      </div>
+      <div class="font-bold text-sm mb-2 uppercase tracking-tight">N-Body Systems</div>
+      <div class="text-xs opacity-60 leading-relaxed">Solar systems, Trojan asteroids, galaxy cores — many masses at once.</div>
+    </a>
+    <a href="{{ url_for('concepts') }}" class="p-6 hover:bg-black hover:text-white transition group" style="border-right:1px solid var(--clr-border); border-bottom:1px solid var(--clr-border);">
+      <div class="flex items-center gap-2 mb-4">
+        <span class="tag">Theory</span>
+      </div>
+      <div class="font-bold text-sm mb-2 uppercase tracking-tight">Concept Explorer</div>
+      <div class="text-xs opacity-60 leading-relaxed">Physics explanations with Wikipedia summaries and live demos side by side.</div>
+    </a>
+  </div>
+</section>
+
+<!-- Teacher-student section -->
+<section class="max-w-6xl mx-auto px-6 py-20" style="border-top:1px solid var(--clr-border);">
+  <div class="grid md:grid-cols-2 gap-16 items-center">
+    <div>
+      <p class="section-eyebrow mb-3">For educators</p>
+      <h2 class="text-4xl font-black uppercase tracking-tighter mb-6">Structured<br>Investigations</h2>
+      <p class="text-gray-500 text-sm leading-relaxed mb-10 font-medium">
+        Teachers design investigations with starter simulations, learning objectives, 
+        and targeted questions. Students build their own version of the simulation, 
+        observe the physics, form hypotheses, and write up their findings.
+      </p>
+      <div class="space-y-4">
+        {% for label, desc in [
+          ('Starter Configs', 'Pre-load a specific scenario so students start in the right context.'),
+          ('Hypothesis Step', 'Students record predictions before running.'),
+          ('Structured Q&A', 'Per-question answer fields keep responses focused.'),
+          ('Inline Sim Review', 'Teachers replay the exact simulation the student submitted.'),
+        ] %}
+        <div class="flex gap-4">
+          <div class="w-5 h-5 flex-shrink-0 flex items-center justify-center mt-1" style="border:1px solid var(--clr-border);">
+            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20" style="color:var(--clr-text);"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
+          </div>
+          <div>
+            <span class="text-xs font-black uppercase tracking-widest">{{ label }}</span>
+            <p class="text-xs text-gray-500 mt-1">{{ desc }}</p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="flex gap-4 mt-12">
+        {% if not current_user.is_authenticated %}
+        <a href="{{ url_for('register') }}" class="btn btn-primary">Join as teacher</a>
+        {% elif current_user.is_teacher %}
+        <a href="{{ url_for('new_assignment') }}" class="btn btn-primary">Create assignment</a>
+        {% endif %}
+        <a href="{{ url_for('demos') }}" class="btn btn-secondary">Browse demos</a>
+      </div>
+    </div>
+    
+    <div class="grid grid-cols-1 gap-0" style="border:1px solid var(--clr-border); background:var(--clr-border);">
+      {% if published_assignments > 0 %}
+      <div class="p-6" style="background:var(--clr-bg); border-bottom:1px solid var(--clr-border);">
+        <div class="text-2xl font-black">{{ published_assignments }}</div>
+        <div class="text-xs font-bold uppercase tracking-widest opacity-60">Published Assignments</div>
+      </div>
+      {% endif %}
+      <div class="p-6" style="background:var(--clr-bg); border-bottom:1px solid var(--clr-border);">
+        <div class="text-2xl font-black">{{ demo_count }}</div>
+        <div class="text-xs font-bold uppercase tracking-widest opacity-60">Curated Demos</div>
+      </div>
+      <div class="p-6" style="background:var(--clr-bg);">
+        <div class="text-2xl font-black">10</div>
+        <div class="text-xs font-bold uppercase tracking-widest opacity-60">Core Concepts</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Recent from gallery -->
+{% if recent %}
+<section class="max-w-6xl mx-auto px-6 py-20" style="border-top:1px solid var(--clr-border);">
+  <div class="flex items-end justify-between mb-12">
+    <div>
+      <p class="section-eyebrow mb-1">Community</p>
+      <h2 class="text-4xl font-black uppercase tracking-tighter">Recent Systems</h2>
+    </div>
+    <a href="{{ url_for('gallery') }}" class="btn btn-ghost btn-sm">View all →</a>
+  </div>
+
+  <div class="grid md:grid-cols-3 gap-0" style="border-left:1px solid var(--clr-border); border-top:1px solid var(--clr-border);">
+    {% for sim in recent %}
+    <div class="p-8 hover:bg-gray-50 transition flex flex-col gap-4" style="border-right:1px solid var(--clr-border); border-bottom:1px solid var(--clr-border);">
+      <div class="flex items-start justify-between">
+        <h3 class="font-bold text-sm uppercase tracking-tight">{{ sim.title }}</h3>
+        <span class="tag">{{ sim.scenario }}</span>
+      </div>
+      <p class="text-xs text-gray-500 flex-grow leading-relaxed">
+        {{ sim.description or 'A custom gravitational system.' }}
+      </p>
+      <div class="flex items-center justify-between pt-4" style="border-top:1px solid var(--clr-border-light);">
+        <span class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{{ sim.author.username }}</span>
+        <a href="{{ url_for('sandbox', id=sim.id) }}" class="btn btn-primary btn-sm">Open</a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+{% endblock %}

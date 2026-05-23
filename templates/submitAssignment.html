@@ -1,0 +1,197 @@
+{% extends "layout.html" %}
+{% block title %}{{ assignment.title }} — Submit{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/submit.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-6 py-10">
+
+  <div class="mb-6">
+    <a href="{{ url_for('assignmentDetail', aid=assignment.id) }}" class="text-xs text-gray-500 hover:text-gray-400 mono flex items-center gap-1 mb-4">← Back to assignment</a>
+    <div class="flex items-start justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold tracking-tight mb-1">{{ assignment.title }}</h1>
+        <div class="flex items-center gap-2 flex-wrap">
+          {% if assignment.difficulty %}
+          <span class="tag tag-gray diff-{{ assignment.difficulty }}">{{ assignment.difficulty }}</span>
+          {% endif %}
+          {% if assignment.concept %}
+          <a href="{{ url_for('conceptDetail', key=assignment.concept) }}" class="concept-pill" target="_blank">
+            📖 {{ assignment.concept | replace('_',' ') | title }}
+          </a>
+          {% endif %}
+        </div>
+      </div>
+      {% if existing %}
+      <span class="tag {% if existing.grade %}tag-green{% else %}tag-blue{% endif %} flex-shrink-0">
+        {% if existing.grade %}Graded: {{ existing.grade }}{% else %}Previously submitted{% endif %}
+      </span>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Step progress -->
+  <div class="flex items-center gap-3 mb-8">
+    {% for step_num, step_label in [(1,'Read'),(2,'Hypothesise'),(3,'Simulate'),(4,'Answer'),(5,'Submit')] %}
+    <div class="flex items-center gap-2">
+      <div class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0"
+           style="background:rgba(79,156,249,0.15);border:1px solid rgba(79,156,249,.25);color:#4f9cf9;">{{ step_num }}</div>
+      <span class="text-xs text-gray-500 hidden sm:inline">{{ step_label }}</span>
+    </div>
+    {% if not loop.last %}<div class="flex-grow h-px" style="background:var(--clr-border-light);max-width:40px;"></div>{% endif %}
+    {% endfor %}
+  </div>
+
+  <form method="POST" id="submit-form">
+
+    <!-- Step 1: Concept background -->
+    {% if assignment.concept %}
+    <div class="card p-5 mb-5" style="border-color:rgba(79,156,249,.2);background:rgba(79,156,249,.04);">
+      <div class="flex items-start gap-3">
+        <span class="text-xl flex-shrink-0">📖</span>
+        <div class="flex-grow">
+          <p class="text-sm font-semibold mb-1">Step 1 — Read the background concept first</p>
+          <p class="text-xs text-gray-500 mb-2">Understanding the theory will help you interpret what you see in the simulation.</p>
+          <a href="{{ url_for('conceptDetail', key=assignment.concept) }}" target="_blank"
+             class="concept-pill">
+            {{ assignment.concept | replace('_',' ') | title }} — read concept →
+          </a>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Learning objectives -->
+    {% if objectives %}
+    <div class="card p-5 mb-5">
+      <h2 class="font-semibold text-sm mb-3">Learning Objectives</h2>
+      <ul class="space-y-2">
+        {% for obj in objectives %}
+        <li class="flex gap-2 text-xs text-gray-500">
+          <span style="color:#34d399;flex-shrink:0;margin-top:1px;">✓</span>
+          {{ obj }}
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    <!-- Instructions -->
+    <div class="card p-5 mb-5">
+      <h2 class="font-semibold text-xs text-gray-400 uppercase tracking-wide mb-2">Instructions</h2>
+      <p class="text-sm leading-relaxed" style="white-space:pre-line;">{{ assignment.description }}</p>
+    </div>
+
+    <!-- Step 2: Hypothesis -->
+    <div class="card p-5 mb-5" style="border-color:rgba(167,139,250,.15);">
+      <h2 class="font-semibold text-sm mb-1">Step 2 — State your hypothesis <span class="text-gray-500 font-normal">(before running)</span></h2>
+      <p class="text-xs text-gray-500 mb-3">Based on the instructions and concept reading, what do you predict you'll observe? Good science starts with a prediction.</p>
+      <div class="field">
+        <label>Your prediction</label>
+        <textarea name="hypothesis" rows="3" style="resize:vertical;"
+                  placeholder="e.g. I expect the planet to speed up when it gets close to the star, because conservation of angular momentum means…">{{ existing.hypothesis if existing and existing.hypothesis else '' }}</textarea>
+      </div>
+    </div>
+
+    <!-- Step 3: Simulation -->
+    <div class="card mb-5 overflow-hidden">
+      <div class="px-5 py-3 flex items-center justify-between" style="border-bottom:1px solid var(--clr-border-light);">
+        <h2 class="font-semibold text-sm">Step 3 — Build &amp; run your simulation</h2>
+        <span class="mono text-xs text-gray-500">state captured automatically</span>
+      </div>
+
+      <div id="sim-frame" class="relative" style="background:#03050c;">
+        <canvas id="sim-canvas" style="width:100%;height:100%;display:block;cursor:crosshair;"></canvas>
+
+        <!-- HUD -->
+        <div style="position:absolute;top:10px;left:10px;display:flex;gap:6px;flex-wrap:wrap;">
+          <div class="glass px-3 py-1.5 rounded-md text-[10px] mono text-gray-400">bodies: <span id="hud-bodies">0</span></div>
+          <div class="glass px-3 py-1.5 rounded-md text-[10px] mono text-gray-400">t = <span id="hud-time">0.0</span>s</div>
+          <div class="glass px-3 py-1.5 rounded-md text-[10px] mono text-gray-400">KE: <span id="hud-ke">0</span></div>
+        </div>
+
+        <!-- Controls overlay -->
+        <div style="position:absolute;bottom:10px;right:10px;display:flex;gap:5px;">
+          <button type="button" id="btn-play" onclick="togglePlay()"
+                  class="glass px-3 py-1.5 rounded-md text-xs mono" style="color:rgba(255,255,255,.7); cursor:pointer;">▶ Run</button>
+          <button type="button" onclick="resetSim()"
+                  class="glass px-3 py-1.5 rounded-md text-xs mono" style="color:rgba(255,255,255,.5); cursor:pointer;">↺ Reset</button>
+          <button type="button" onclick="clearBodies()"
+                  class="glass px-3 py-1.5 rounded-md text-xs mono" style="color:rgba(255,255,255,.5); cursor:pointer;">Clear</button>
+        </div>
+        <div style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);" class="pointer-events-none">
+          <span class="glass px-3 py-1 rounded-full text-[10px] mono" style="color:rgba(255,255,255,.4);">click to place · drag to set velocity · scroll to zoom</span>
+        </div>
+      </div>
+
+      <!-- Sim controls bar -->
+      <div class="px-5 py-3 flex flex-wrap gap-4 items-center" style="border-top:1px solid var(--clr-border-light);background:rgba(2,6,23,0.40);backdrop-filter:blur(12px);">
+        <div class="flex items-center gap-2">
+          <span class="mono text-[10px]" style="color:rgba(255,255,255,.4);">G</span>
+          <input type="range" id="ctrl-g" min="10" max="500" value="100" oninput="simParams.G=+this.value;document.getElementById('gval').textContent=this.value" style="width:80px;">
+          <span class="mono text-[10px]" style="color:rgba(255,255,255,.5);" id="gval">100</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="mono text-[10px]" style="color:rgba(255,255,255,.4);">speed</span>
+          <input type="range" id="ctrl-dt" min="0.05" max="2" step="0.05" value="0.4" oninput="simParams.dt=+this.value;document.getElementById('dtval').textContent=this.value" style="width:80px;">
+          <span class="mono text-[10px]" style="color:rgba(255,255,255,.5);" id="dtval">0.4</span>
+        </div>
+        <div class="flex gap-1.5 flex-wrap">
+          {% for key, label in [('solar_system','Solar System'),('binary_star','Binary Star'),('figure_eight','Fig-8'),('chaotic_three','3-Body Chaos'),('lagrange_trojan','Lagrange')] %}
+          <button type="button" onclick="loadDemo('{{ key }}')" class="btn btn-secondary btn-sm">{{ label }}</button>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <input type="hidden" name="config_json" id="config-capture">
+
+    <!-- Step 4: Questions -->
+    {% if questions %}
+    <div class="card p-6 mb-5 space-y-5">
+      <h2 class="font-semibold text-xs text-gray-400 uppercase tracking-wide">Step 4 — Answer the Questions</h2>
+      {% for q in questions %}
+      <div class="field">
+        <label>{{ loop.index }}. {{ q }}</label>
+        <textarea name="answer_{{ loop.index0 }}" rows="3" required
+                  placeholder="Describe your observation or explanation…"
+                  style="resize:vertical;">{{ (existing.answers | from_json)[loop.index0] if existing and existing.answers else '' }}</textarea>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Step 5: Overall observations -->
+    <div class="card p-6 mb-6">
+      <h2 class="font-semibold text-xs text-gray-400 uppercase tracking-wide mb-4">Step 5 — Overall Observations</h2>
+      <div class="field">
+        <label>What did you discover? Did anything surprise you?</label>
+        <textarea name="observations" rows="4" style="resize:vertical;"
+                  placeholder="Describe what you observed, what parameters you changed, and what it helped you understand. Compare to your hypothesis above.">{{ existing.observations or '' }}</textarea>
+      </div>
+    </div>
+
+    <div class="flex justify-between items-center">
+      <a href="{{ url_for('assignmentDetail', aid=assignment.id) }}" class="btn btn-ghost">← Cancel</a>
+      <button type="submit" class="btn btn-primary btn-lg">
+        {{ 'Update Submission' if existing else 'Submit Assignment' }} →
+      </button>
+    </div>
+
+  </form>
+</div>
+
+<!-- Jinja config injection -->
+<script>
+  window.SUBMIT_CONFIG = {
+    starterConfig: {{ starter_config | tojson if starter_config else 'null' }},
+    existingConfig: {{ existing.config_json | safe if existing and existing.config_json else 'null' }}
+  };
+</script>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/submitSim.js') }}"></script>
+{% endblock %}
